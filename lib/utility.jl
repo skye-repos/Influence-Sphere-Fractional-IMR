@@ -1,7 +1,10 @@
 using Plots
 using Tables, CSV
-include("lib/network-generator.jl")
+include("network-generator.jl")
 
+"""
+Count the fraction of nodes that flipped more than once
+"""
 function count_flips_fraction(full_tracking::Vector{Vector{Int}})
     l = length(full_tracking)
     N = length(full_tracking[1])
@@ -22,35 +25,30 @@ function count_flips_fraction(full_tracking::Vector{Vector{Int}})
     return count / N
 end
 
+"""
+Calculate final fraction of nodes with opinion state 0
+"""
 function final_fraction(full_tracking)
     state = full_tracking[end]
     n = [0, 0]
-    for value in state
+    for value ∈ state
         n[value+1] += 1
     end
     return n[1] / length(state)
 end
 
+"""
+Helper function to make graphs
+"""
 function make_graphs(
-    dir;
     type="ER",
     N=N, p=p,
     N0=N0, m=m,
     num_realizations=num_realizations)
 
-    dir = dir * "/$(type)/N = $(N)/"
-
     graph_list = Vector{Graph}(undef, num_realizations)
 
     for i ∈ 1:num_realizations
-        if type == "ER"
-            name = dir * "p = $(p), realization #$(i).bin"
-        elseif type == "BA"
-            name = dir * "N0 = $(N0), m = $(m), realization #$(i).bin"
-        else
-            error("Unsupported graph kind not ER or BA")
-        end
-
         if type == "ER"
             g = erdos_renyi(N, p)
             @info "Made new ER graph, realization $(i)/$(num_realizations)"
@@ -66,6 +64,9 @@ function make_graphs(
     return graph_list
 end
 
+"""
+Plot results 
+"""
 function results_plotter(sol_matrix::AbstractMatrix, θ_list=θ_list; ylabel, title, labels=plot_labels)
     l_θ, l_F = Base.size(sol_matrix)
 
@@ -104,4 +105,17 @@ function write_to_file(result::AbstractMatrix; file_name::AbstractString, header
     CSV.write(file_name, table, header=header)
 
     return nothing
+end
+
+"""
+Convolve shit i guess
+"""
+function convolve(F, G)
+    length(F) ≠ length(G) ? error("Please provide equal length arrays") : result = zeros(length(F))
+        
+    for n ∈ eachindex(G), m ∈ eachindex(F)
+        result[n] += F[m]*G[abs(n-m)]
+    end
+
+    return result
 end

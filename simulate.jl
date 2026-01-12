@@ -17,7 +17,7 @@ function new_state(
 
     m0 + m1 > 0 ? node_frac = m1 / (m0 + m1) : node_frac = 0
 
-    node_frac ≥ θ ? new_state = 1 : 0 < node_frac < θ ? new_state = 0 : new_state = state[node]
+    node_frac ≥ θ ? new_state = 1 : node_frac < θ ? new_state = 0 : new_state = state[node]
 
     return new_state
 end
@@ -49,12 +49,12 @@ function fractional_IMR(
                 changes += 1
             end
         end
-
+        
+        full_tracking = push!(full_tracking, current)
+        
         if changes == 0
             break
         end
-
-        full_tracking = push!(full_tracking, current)
     end
 
     return full_tracking

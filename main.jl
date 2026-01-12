@@ -1,7 +1,7 @@
 using Distributed
 addprocs(8)
 @everywhere begin
-    include("utility.jl")
+    include("lib/utility.jl")
     include("simulate.jl")
     include("influence-radius.jl")
     using SharedArrays
@@ -27,7 +27,7 @@ end
             local p_s = calculate_instability(g, θ, result[1])
             flips[i, j] += count_flips_fraction(result) / l_g
             ffrac[i, j] += final_fraction(result) / l_g
-            smode[i, j] += instability_mode(p_s) / l_g
+            smode[i, j] += instability_avg(p_s) / l_g
             @info "Finished θ = $(θ), F₀ = $(F₀), and realization #$(n)/$(l_g)"
         end
     end
@@ -36,44 +36,44 @@ end
 end
 
 ## Declare constants
-const N::Int = 1e3
+const N::Int = 5e3
 const p::Float64 = 4.5 / (N - 1)
 const m::Int = 5
 const N0::Int = 15
 
-const num_realizations::Int = 5
+const num_realizations::Int = 2
 const type::String = "ER"
 
-const θ_list = collect(0.05:0.01:0.95)
+const θ_list = collect(0.05:0.05:0.95)
 const F₀_list = collect(0.05:0.05:0.50)
 
-const graphs = make_graphs(graph_dir)
+const graphs = make_graphs()
 
 const plot_labels = ["F₀ = $(i)" for i ∈ F₀_list]
 
 ## This runs the actual simulations and averages over 25 realizations
-@time flips, ffrac, smode = average_simulations(graphs)
+@time flips, ffrac, smode = average_simulations(graphs);
 
 ## Writing to CSV
-CSV_dir = "./results/CSV/$(type)/N=$(N)/"
+CSV_dir = "./results/CSV/$(type)/N=$(N)/";
 if !ispath(CSV_dir)
     mkpath(CSV_dir)
 end
 
-flips_CSV_file = CSV_dir * "flips " * join(string.(F₀_list), ", ") * ".csv"
+flips_CSV_file = CSV_dir * "flips " * join(string.(F₀_list), ", ") * ".csv";
 write_to_file(flips',
     file_name=flips_CSV_file,
-    header=θ_list)
+    header=θ_list);
 
-ffrac_CSV_file = CSV_dir * "ffrac " * join(string.(F₀_list), ", ") * ".csv"
+ffrac_CSV_file = CSV_dir * "ffrac " * join(string.(F₀_list), ", ") * ".csv";
 write_to_file(ffrac',
     file_name=ffrac_CSV_file,
-    header=θ_list)
+    header=θ_list);
 
-smode_CSV_file = CSV_dir * "smode " * join(string.(F₀_list), ", ") * ".csv"
+smode_CSV_file = CSV_dir * "smode " * join(string.(F₀_list), ", ") * ".csv";
 write_to_file(smode',
     file_name=smode_CSV_file,
-    header=θ_list)
+    header=θ_list);
 
 ## Plotting Everything
 plot_dir = "./results/plots/$(type)/N=$(N)/";
@@ -83,18 +83,18 @@ end
 
 smode_plot = results_plotter(smode;
     ylabel="% of nodes w/ max instability",
-    title="N = $(N), $(type), Fractional-IMR m1/(m0+m1)")
+    title="N = $(N), $(type), Fractional-IMR m1/(m0+m1)");
 
-savefig(plot_dir * "comparison-ismode.png")
+savefig(plot_dir * "comparison-ismode.png");
 
 flips_plot = results_plotter(flips;
     ylabel="% of nodes flipping > once",
-    title="N = $(N), $(type), Fractional-IMR m1/(m0+m1)")
+    title="N = $(N), $(type), Fractional-IMR m1/(m0+m1)");
 
-savefig(plot_dir * "comparison-#flips.png")
+savefig(plot_dir * "comparison-#flips.png");
 
 ffrac_plot = results_plotter(ffrac;
     ylabel="fraction of nodes with final state 0",
-    title="N = $(N), $(type), Fractional-IMR m1/(m0+m1)")
+    title="N = $(N), $(type), Fractional-IMR m1/(m0+m1)");
 
-savefig(plot_dir * "comparison-%ffrac.png")
+savefig(plot_dir * "comparison-%ffrac.png");

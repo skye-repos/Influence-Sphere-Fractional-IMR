@@ -66,3 +66,13 @@ function instability_mode(p_stab::AbstractDict)
 
     return p_stab[max_key]
 end
+
+function instability_avg(p_stab::AbstractDict)
+    sum = 0
+
+    for key in keys(p_stab)
+	    sum += p_stab[key]
+    end
+
+    return sum / length(keys(p_stab))
+end
