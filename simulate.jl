@@ -37,11 +37,9 @@ function fractional_IMR(
 
     for _ ∈ 1:max_sweeps
         changes = 0
-        node_order = shuffle(collect(nodes(g)))
-
         current = Base.copy(full_tracking[end])
 
-        for node ∈ node_order
+        for node ∈ shuffle(collect(nodes(g)))
             new = new_state(g, k, θ, node, current)
 
             if new ≠ current[node]

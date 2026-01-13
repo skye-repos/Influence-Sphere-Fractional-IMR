@@ -18,16 +18,16 @@ end
 
     flips = SharedArray{Float64}(l_θ, l_F)
     ffrac = SharedArray{Float64}(l_θ, l_F)
-    smode = SharedArray{Float64}(l_θ, l_F)
+    smode = SharedArray{Float64}(l_θ, l_F, N)
 
     @sync @distributed for n ∈ 1:l_g
         g = graphs[n]
-        for (i, θ) ∈ pairs(θ_list), (j, F₀) ∈ pairs(F₀_list)
+        for (i, θ) ∈ pairs(θ_list), (j, F₀) ∈ pairs(F₀_list)                      
             local result = fractional_IMR(g, θ=θ, F₀=F₀)
             local p_s = calculate_instability(g, θ, result[1])
             flips[i, j] += count_flips_fraction(result) / l_g
             ffrac[i, j] += final_fraction(result) / l_g
-            smode[i, j] += instability_avg(p_s) / l_g
+            smode[i, j, :] += p_s ./ l_g
             @info "Finished θ = $(θ), F₀ = $(F₀), and realization #$(n)/$(l_g)"
         end
     end
@@ -36,15 +36,15 @@ end
 end
 
 ## Declare constants
-const N::Int = 5e3
+const N::Int = 2e4
 const p::Float64 = 4.5 / (N - 1)
 const m::Int = 5
 const N0::Int = 15
 
-const num_realizations::Int = 2
+const num_realizations::Int = 25
 const type::String = "ER"
 
-const θ_list = collect(0.05:0.05:0.95)
+const θ_list = collect(0.05:0.01:0.95)
 const F₀_list = collect(0.05:0.05:0.50)
 
 const graphs = make_graphs()
@@ -70,22 +70,19 @@ write_to_file(ffrac',
     file_name=ffrac_CSV_file,
     header=θ_list);
 
-smode_CSV_file = CSV_dir * "smode " * join(string.(F₀_list), ", ") * ".csv";
-write_to_file(smode',
-    file_name=smode_CSV_file,
-    header=θ_list);
+for (i, F₀) in pairs(F₀_list)
+    local file = CSV_dir * "p_stab F₀ = $(F₀) "	* ".csv";
+    istab = smode[:, i, :]
+    write_to_file(istab',
+                  file_name = file,
+                  header=θ_list);
+end
 
 ## Plotting Everything
 plot_dir = "./results/plots/$(type)/N=$(N)/";
 if !ispath(plot_dir)
     mkpath(plot_dir)
 end
-
-smode_plot = results_plotter(smode;
-    ylabel="% of nodes w/ max instability",
-    title="N = $(N), $(type), Fractional-IMR m1/(m0+m1)");
-
-savefig(plot_dir * "comparison-ismode.png");
 
 flips_plot = results_plotter(flips;
     ylabel="% of nodes flipping > once",

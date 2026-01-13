@@ -53,9 +53,11 @@ function calculate_instability(g::Graph, θ::Float64, state::Vector{Int})
 
     c = countmap(instability) # counts the number of nodes with a particular stability value
 
-    p_stab = Dict{Int,Float64}()
+    p_stab = zeros(Float64, N)
     for key ∈ keys(c)
-        p_stab[key] = c[key] / N
+        if key ≠ 0
+            p_stab[key] = c[key] / N
+        end
     end
 
     return p_stab
@@ -65,14 +67,4 @@ function instability_mode(p_stab::AbstractDict)
     max_key = reduce((x, y) -> p_stab[x] ≥ p_stab[y] ? x : y, keys(p_stab))
 
     return p_stab[max_key]
-end
-
-function instability_avg(p_stab::AbstractDict)
-    sum = 0
-
-    for key in keys(p_stab)
-	    sum += p_stab[key]
-    end
-
-    return sum / length(keys(p_stab))
 end
