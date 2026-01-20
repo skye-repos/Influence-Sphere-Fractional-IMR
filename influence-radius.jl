@@ -13,18 +13,19 @@ function radius(g::Graph, k::Vector{Int}, θ::Float64, node::Int64, state::Vecto
     dists[node] = 0
 
     current_state = Base.copy(state)
-
-    current_state[node] = Int(1 - current_state[node])
+    flipped_state = Base.copy(state)
+    flipped_state[node] = Int(1 - flipped_state[node])
 
     while !isempty(Q)
         current = dequeue!(Q)
 
         for nbr ∈ neighbors(g, current)
             if !visited[nbr]
-                new = new_state(g, k, θ, node, current_state)
+                new_curr = new_state(g, k, θ, nbr, current_state)
+                new_flip = new_state(g, k, θ, nbr, flipped_state)
 
-                if new ≠ current_state[nbr]
-                    current_state[nbr] = new
+                if new_flip ≠ current_state[nbr] && new_curr == current_state[nbr]
+                    flipped_state[nbr] = new_flip
                     visited[nbr] = true
                     dists[nbr] = dists[current] + 1
                     enqueue!(Q, nbr)
