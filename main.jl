@@ -51,12 +51,12 @@ function average_simulations(
 end
 
 ## Declare simulation parameters
-const N::Int = 3.5e4
+const N::Int = 2e4
 const p::Float64 = 4.5 / (N - 1)
 const num_realizations::Int = 25
-const θ_list = collect(0.1:0.01:0.9)
+const θ_list = collect(0.4:0.01:0.8)
 const l_θ = length(θ_list)
-const F₀_list = collect(0.15:0.05:0.45)
+const F₀_list = collect(0.10:0.05:0.40)
 const l_F = length(F₀_list)
 
 const graphs = make_graphs()
@@ -65,21 +65,21 @@ const plot_labels = ["F₀ = $(i)" for i ∈ F₀_list]
 ## This runs the actual simulations and averages over 25 realizations
 @time flips, ffrac, exin0, exin1 = average_simulations(graphs);
 
+exins = exin1 - exin0
+
 exin0_rescaled = zeros(Float64, (l_θ, l_F))
 exin1_rescaled = zeros(Float64, (l_θ, l_F))
+exins_rescaled = zeros(Float64, (l_θ, l_F))
 for i ∈ eachindex(F₀_list)
     local max0 = maximum(exin0[:, i])
     local max1 = maximum(exin1[:, i])
+    local maxs = maximum(abs.(exins[:, i]))
     for j ∈ eachindex(θ_list)
         exin0_rescaled[j, i] = exin0[j, i] / max0
         exin1_rescaled[j, i] = exin1[j, i] / max1
+        exins_rescaled[j, i] = exins[j, i] / maxs
     end
 end
-
-exins = exin1 - exin0
-abs_exins = abs.(exins)
-exins_rescaled = exin1_rescaled - exin0_rescaled
-abs_exins_rescaled = abs.(exins_rescaled)
 
 ## Plotting & Writing to CSV
 CSV_dir = "./results/CSV/N=$(N)/"
@@ -136,7 +136,7 @@ savefig(plt_dir * "$(N)-flips.png")
 
 results_plotter(ffrac, θ_list;
     ylabel="% nodes",
-    title="Equilibrium fraction of Oᵥ = 0, N = $(N)",
+    title="Final fraction of nodes w/ Oᵥ = 0, N = $(N)",
     labels=plot_labels)
 savefig(plt_dir * "$(N)-ffrac.png")
 
@@ -170,20 +170,74 @@ results_plotter(exins, θ_list;
     labels=plot_labels)
 savefig(plt_dir * "$(N)-exins.png")
 
-results_plotter(abs_exins, θ_list;
+results_plotter(abs.(exins), θ_list;
     ylabel="|⟨I₁⟩ - ⟨I₀⟩|",
-    title="Magnitude of Comparative Instability, N = $(N)",
+    title="Absolute Comparative Instability of Opinions, N = $(N)",
     labels=plot_labels)
-savefig(plt_dir * "$(N)-abs-exins.png")
+savefig(plt_dir * "$(N)-exins-abs.png")
 
-results_plotter(exins_rescaled, θ_list;
-    ylabel="⟨I₁⟩ - ⟨I₀⟩",
-    title="Rescaled Comparative Instability, N = $(N)",
-    labels=plot_labels)
-savefig(plt_dir * "$(N)-exins-rescaled.png")
-
-results_plotter(abs_exins_rescaled, θ_list;
+results_plotter(abs.(exins_rescaled), θ_list;
     ylabel="|⟨I₁⟩ - ⟨I₀⟩|",
-    title="Magnitude of Rescaled Comparative Instability, N = $(N)",
+    title="Absolute Rescaled Comparative Instability, N = $(N)",
     labels=plot_labels)
-savefig(plt_dir * "$(N)-abs-exins-rescaled.png")
+savefig(plt_dir * "$(N)-exins-rescaled-abs.png")
+
+hmp_flips = heatmap(θ_list, F₀_list, flips',
+    c=:viridis,
+    xlabel="θ", ylabel="F₀",
+    title="% flip-floppers")
+savefig(hmp_flips, plt_dir * "$(N)-heatmap-flips.png")
+
+hmp_ffrac = heatmap(θ_list, F₀_list, ffrac',
+    c=:viridis,
+    xlabel="θ", ylabel="F₀",
+    title="% with final Oᵥ = 0")
+savefig(hmp_ffrac, plt_dir * "$(N)-heatmap-ffrac.png")
+
+hmp_exin0_rsc = heatmap(θ_list, F₀_list, exin0_rescaled',
+    c=:viridis,
+    xlabel="θ", ylabel="F₀",
+    title="Rescaled ⟨I₀⟩")
+savefig(hmp_exin0_rsc, plt_dir * "$(N)-heatmap-exin0-rescaled.png")
+
+hmp_exin0 = heatmap(θ_list, F₀_list, exin0',
+    c=:viridis,
+    xlabel="θ", ylabel="F₀",
+    title="⟨I₀⟩")
+savefig(hmp_exin0, plt_dir * "$(N)-heatmap-exin0.png")
+
+hmp_exin1_rsc = heatmap(θ_list, F₀_list, exin1_rescaled',
+    c=:viridis,
+    xlabel="θ", ylabel="F₀",
+    title="Rescaled ⟨I₁⟩")
+savefig(hmp_exin1_rsc, plt_dir * "$(N)-heatmap-exin1-rescaled.png")
+
+hmp_exin1 = heatmap(θ_list, F₀_list, exin1',
+    c=:viridis,
+    xlabel="θ", ylabel="F₀",
+    title="⟨I₁⟩")
+savefig(hmp_exin1, plt_dir * "$(N)-heatmap-exin1.png")
+
+hmp_exins_rsc = heatmap(θ_list, F₀_list, exins_rescaled',
+    c=:viridis,
+    xlabel="θ", ylabel="F₀",
+    title="Rescaled ⟨I₁⟩ - ⟨I₀⟩")
+savefig(hmp_exins_rsc, plt_dir * "$(N)-heatmap-exins-rescaled.png")
+
+hmp_exins = heatmap(θ_list, F₀_list, exins',
+    c=:viridis,
+    xlabel="θ", ylabel="F₀",
+    title="⟨I₁⟩ - ⟨I₀⟩")
+savefig(hmp_exins, plt_dir * "$(N)-heatmap-exins.png")
+
+hmp_exins_rsc_abs = heatmap(θ_list, F₀_list, abs.(exins_rescaled)',
+    c=:viridis,
+    xlabel="θ", ylabel="F₀",
+    title="Rescaled |⟨I₁⟩ - ⟨I₀⟩|")
+savefig(hmp_exins_rsc_abs, plt_dir * "$(N)-heatmap-exins-rescaled-abs.png")
+
+hmp_exins_abs = heatmap(θ_list, F₀_list, abs.(exins)',
+    c=:viridis,
+    xlabel="θ", ylabel="F₀",
+    title="|⟨I₁⟩ - ⟨I₀⟩|")
+savefig(hmp_exins_abs, plt_dir * "$(N)-heatmap-exins-abs.png")

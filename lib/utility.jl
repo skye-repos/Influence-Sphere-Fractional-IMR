@@ -1,6 +1,7 @@
 using Plots
 using Tables, CSV
 include("network-generator.jl")
+include("paths.jl")
 
 """
     count_flips(tracking::AbstractVector)
@@ -17,11 +18,21 @@ function count_flips(tracking::AbstractVector)
     end
 
     count = 0
+    # count0 = 0
     for flips ∈ T
         flips > 1 ? count += 1 : nothing
     end
+    # state = tracking[1]
+    # for i ∈ eachindex(T)
+    #     if T[i] > 1
+    #         count += 1
+    #         if state[i] == 0
+    #             count0 += 1
+    #         end
+    #     end
+    # end
 
-    return count / N
+    return count / N# , count0 / count
 end
 
 """
@@ -128,4 +139,35 @@ function write_to_file(
     @info "Wrote $(file_name) CSV"
 
     return nothing
+end
+
+"""
+    giant_component_by_opinion(
+    g::Graph,
+    state::AbstractVector
+)
+
+Number of nodes in the GC of the induced sub-graph of nodes with `opinion`
+"""
+function giant_component_by_opinion(
+    g::Graph,
+    state::AbstractVector,
+    op::Int,
+)
+
+    isg_edges = Tuple[]
+    for (u, v) ∈ edges(g)
+        if state[u] == op && state[v] == op
+            push!(isg_edges, (u, v))
+        end
+    end
+
+    if isempty(isg_edges)
+        return 0
+    else
+        isg = graph_from_edges(isg_edges)
+        gc = giant_component(isg)
+
+        return length(gc)
+    end
 end
