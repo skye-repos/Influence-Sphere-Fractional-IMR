@@ -8,15 +8,15 @@
 #include <utility>
 
 struct Config {
-  int N = 1000;
+  int N = 5000;
   double kavg = 4.5;
-  int nrel = 5;
-  double tmin = 0.40;
-  double tmax = 0.80;
+  int nrel = 25;
+  double tmin = 0.10;
+  double tmax = 0.90;
   int Nt = 100;
   double F0min = 0.05;
   double F0max = 0.50;
-  int NF0 = 5;
+  int NF0 = 10;
   int seed = 12345;
 };
 

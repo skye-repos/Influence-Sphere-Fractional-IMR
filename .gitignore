@@ -1,3 +1,5 @@
 build/*
 LEARNING.org
 results/*
+src/*.o
+*.out
