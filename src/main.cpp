@@ -9,12 +9,12 @@
 #include <vector>
 
 struct Config {
-  int N = 5000;
+  int N = 2500;
   double kavg = 4.5;
   int nrel = 25;
   double tmin = 0.10;
   double tmax = 0.90;
-  int Nt = 100;
+  int Nt = 1000;
   double F0min = 0.10;
   double F0max = 0.60;
   int NF0 = 10;

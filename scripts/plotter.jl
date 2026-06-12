@@ -29,10 +29,18 @@ for file in files
         title = "Expected Instability of nodes with initial O(v) = 0"
     elseif name == "exin1"
         title = "Expected Instability of nodes with initial O(v) = 1"
+    elseif name == "exins"
+        title = "⟨I1⟩ - ⟨I0⟩"
+    elseif name == "exin0_rsc"
+        title = "Rescaled ⟨I0⟩"
+    elseif name == "exin1_rsc"
+        title = "Rescaled ⟨I1⟩"
+    elseif name == "exins_rsc"
+        title = "Rescaled ⟨I1⟩ - ⟨I0⟩"
     elseif name == "brnch"
         title = "Expected value of branching factor"
     end
-    
+
     hmp = make_heatmap(file, title)
     root = splitpath(file)[3]
     out_dir = out * root * "/"
