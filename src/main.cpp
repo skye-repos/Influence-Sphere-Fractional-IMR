@@ -1,9 +1,8 @@
 #include "io.h"
 #include "realizations.h"
-#include <iostream>
 #include <cstdlib>
 #include <cstring>
-#include <random>
+#include <iostream>
 #include <string>
 #include <utility>
 
@@ -86,8 +85,8 @@ int main(int argc, char *argv[]) {
   const double F0_max = std::move(cfg.F0max);
   const int NF0 = std::move(cfg.NF0);
 
-  AvgSimResult results = avg_simulate_IMR(N, p, num_realizations, cfg.seed, θ_min,
-                                          θ_max, Nθ, F0_min, F0_max, NF0);
+  AvgSimResult results = avg_simulate_IMR(
+      N, p, num_realizations, cfg.seed, θ_min, θ_max, Nθ, F0_min, F0_max, NF0);
 
   std::vector<std::string> θ_labels(Nθ);
   for (int i = 0; i < Nθ; ++i) {
@@ -106,10 +105,12 @@ int main(int argc, char *argv[]) {
   auto ctime_path = "results/N = " + std::to_string(N) + "/CSV/ctime.csv";
   auto exin0_path = "results/N = " + std::to_string(N) + "/CSV/exin0.csv";
   auto exin1_path = "results/N = " + std::to_string(N) + "/CSV/exin1.csv";
+  auto brnch_path = "results/N = " + std::to_string(N) + "/CSV/brnch.csv";
 
   write_csv(flips_path, θ_labels, F0_labels, results.flips_matrix);
   write_csv(ffrac_path, θ_labels, F0_labels, results.ffrac_matrix);
   write_csv(ctime_path, θ_labels, F0_labels, results.ctime_matrix);
   write_csv(exin0_path, θ_labels, F0_labels, results.exin0_matrix);
   write_csv(exin1_path, θ_labels, F0_labels, results.exin1_matrix);
+  write_csv(brnch_path, θ_labels, F0_labels, results.brnch_matrix);
 }

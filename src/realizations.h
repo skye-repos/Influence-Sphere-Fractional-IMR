@@ -8,6 +8,7 @@ struct AvgSimResult {
   std::vector<std::vector<double>> ctime_matrix;
   std::vector<std::vector<double>> exin0_matrix;
   std::vector<std::vector<double>> exin1_matrix;
+  std::vector<std::vector<double>> brnch_matrix;
 };
 
 AvgSimResult avg_simulate_IMR(const int N, const double p,

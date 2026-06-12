@@ -8,6 +8,7 @@ InfluenceResult influence_sphere(const Graph &g, const std::vector<int> &state,
   const int N = g.nv();
   InfluenceResult result;
   result.dist.assign(N, -1);
+  result.branching.assign(N, 0);
 
   std::vector<int> flipped = state;
   flipped[node] = 1 - flipped[node];
@@ -32,6 +33,7 @@ InfluenceResult influence_sphere(const Graph &g, const std::vector<int> &state,
         flipped[nbr] = flip_op;
         result.dist[nbr] = result.dist[v] + 1;
         result.affected.push_back(nbr);
+        ++result.branching[v];
         Q.push(nbr);
       }
     }
@@ -40,10 +42,11 @@ InfluenceResult influence_sphere(const Graph &g, const std::vector<int> &state,
   return result;
 }
 
-std::vector<double> total_instability(const Graph &g,
-                                      const std::vector<int> &state, double θ) {
+std::tuple<std::vector<double>, std::vector<double>>
+total_instability(const Graph &g, const std::vector<int> &state, double θ) {
   const int N = g.nv();
   std::vector<double> I(N, 0.0);
+  std::vector<double> b(N, 0.0);
 
   for (int node = 0; node < N; ++node) {
     auto sphere = influence_sphere(g, state, node, θ);
@@ -51,14 +54,15 @@ std::vector<double> total_instability(const Graph &g,
       if (a == node)
         continue;
       I[a] += 1.0 / sphere.dist[a];
+      b[a] += sphere.branching[a] / (N - 1.0);
     }
   }
 
-  double I_max = 1.0 / (N - 1);
+  double I_max = 1.0 / (N - 1.0);
   for (double &val : I)
     val *= I_max;
 
-  return I;
+  return {I, b};
 }
 
 OpinionInstability opinion_instability(const std::vector<double> &I_total,
@@ -90,7 +94,7 @@ OpinionInstability opinion_instability(const std::vector<double> &I_total,
   return I01;
 }
 
-double expected_instability(const std::vector<double> &I_vec) {
+double expectation(const std::vector<double> &I_vec) {
   int N = I_vec.size();
   double I_sum = std::reduce(I_vec.begin(), I_vec.end());
 
