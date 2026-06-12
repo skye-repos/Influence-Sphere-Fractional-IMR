@@ -1,10 +1,12 @@
 #include "io.h"
 #include "realizations.h"
+#include <algorithm>
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
 #include <string>
 #include <utility>
+#include <vector>
 
 struct Config {
   int N = 5000;
@@ -13,7 +15,7 @@ struct Config {
   double tmin = 0.10;
   double tmax = 0.90;
   int Nt = 100;
-  double F0min = 0.05;
+  double F0min = 0.10;
   double F0max = 0.50;
   int NF0 = 10;
   int seed = 12345;
@@ -88,6 +90,29 @@ int main(int argc, char *argv[]) {
   AvgSimResult results = avg_simulate_IMR(
       N, p, num_realizations, cfg.seed, θ_min, θ_max, Nθ, F0_min, F0_max, NF0);
 
+  std::vector<std::vector<double>> exin0_rsc = results.exin0_matrix;
+  std::vector<std::vector<double>> exin1_rsc = results.exin1_matrix;
+  std::vector<std::vector<double>> exins(NF0, std::vector<double>(Nθ, 0.0));
+
+  for (int fi = 0; fi < NF0; ++fi) {
+    double max0 = *std::max_element(exin0_rsc[fi].begin(), exin0_rsc[fi].end());
+    double max1 = *std::max_element(exin1_rsc[fi].begin(), exin1_rsc[fi].end());
+    for (int ti = 0; ti < Nθ; ++ti) {
+      exin0_rsc[fi][ti] *= 1.0 / max0;
+      exin1_rsc[fi][ti] *= 1.0 / max1;
+      exins[fi][ti] = exin1_rsc[fi][ti] - exin1_rsc[fi][ti];
+    }
+  }
+
+  std::vector<std::vector<double>> exins_rsc = exins;
+
+  for (int fi = 0; fi < NF0; ++fi) {
+    double maxs = *std::max_element(exins_rsc[fi].begin(), exins_rsc[fi].end());
+    for (int ti = 0; ti < Nθ; ++ti) {
+      exins_rsc[fi][ti] *= 1.0 / maxs;
+    }
+  }
+
   std::vector<std::string> θ_labels(Nθ);
   for (int i = 0; i < Nθ; ++i) {
     double val = θ_min + i * (θ_max - θ_min) / Nθ;
@@ -105,6 +130,14 @@ int main(int argc, char *argv[]) {
   auto ctime_path = "results/N = " + std::to_string(N) + "/CSV/ctime.csv";
   auto exin0_path = "results/N = " + std::to_string(N) + "/CSV/exin0.csv";
   auto exin1_path = "results/N = " + std::to_string(N) + "/CSV/exin1.csv";
+  auto exins_path = "results/N = " + std::to_string(N) + "/CSV/exins.csv";
+  auto exin0_rsc_path =
+      "results/N = " + std::to_string(N) + "/CSV/exin0_rsc.csv";
+  auto exin1_rsc_path =
+      "results/N = " + std::to_string(N) + "/CSV/exin1_rsc.csv";
+  auto exins_rsc_path =
+      "results/N = " + std::to_string(N) + "/CSV/exins_rsc.csv";
+
   auto brnch_path = "results/N = " + std::to_string(N) + "/CSV/brnch.csv";
 
   write_csv(flips_path, θ_labels, F0_labels, results.flips_matrix);
@@ -112,5 +145,9 @@ int main(int argc, char *argv[]) {
   write_csv(ctime_path, θ_labels, F0_labels, results.ctime_matrix);
   write_csv(exin0_path, θ_labels, F0_labels, results.exin0_matrix);
   write_csv(exin1_path, θ_labels, F0_labels, results.exin1_matrix);
+  write_csv(exins_path, θ_labels, F0_labels, exins);
+  write_csv(exin0_rsc_path, θ_labels, F0_labels, exin0_rsc);
+  write_csv(exin1_rsc_path, θ_labels, F0_labels, exin1_rsc);
+  write_csv(exins_rsc_path, θ_labels, F0_labels, exins_rsc);
   write_csv(brnch_path, θ_labels, F0_labels, results.brnch_matrix);
 }
