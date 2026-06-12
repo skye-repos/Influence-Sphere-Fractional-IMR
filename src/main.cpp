@@ -100,7 +100,7 @@ int main(int argc, char *argv[]) {
     for (int ti = 0; ti < Nθ; ++ti) {
       exin0_rsc[fi][ti] *= 1.0 / max0;
       exin1_rsc[fi][ti] *= 1.0 / max1;
-      exins[fi][ti] = exin1_rsc[fi][ti] - exin1_rsc[fi][ti];
+      exins[fi][ti] = exin1_rsc[fi][ti] - exin0_rsc[fi][ti];
     }
   }
 
