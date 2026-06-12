@@ -16,7 +16,7 @@ struct Config {
   double tmax = 0.90;
   int Nt = 100;
   double F0min = 0.10;
-  double F0max = 0.50;
+  double F0max = 0.60;
   int NF0 = 10;
   int seed = 12345;
 };
