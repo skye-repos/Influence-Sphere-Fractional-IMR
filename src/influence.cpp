@@ -8,7 +8,7 @@ InfluenceResult influence_sphere(const Graph &g, const std::vector<int> &state,
   const int N = g.nv();
   InfluenceResult result;
   result.dist.assign(N, -1);
-  result.branching.assign(N, 0);
+  result.branching = 0;
 
   std::vector<int> flipped = state;
   flipped[node] = 1 - flipped[node];
@@ -33,7 +33,9 @@ InfluenceResult influence_sphere(const Graph &g, const std::vector<int> &state,
         flipped[nbr] = flip_op;
         result.dist[nbr] = result.dist[v] + 1;
         result.affected.push_back(nbr);
-        ++result.branching[v];
+        if (v == node) {
+          ++result.branching;
+        }
         Q.push(nbr);
       }
     }
@@ -50,11 +52,12 @@ total_instability(const Graph &g, const std::vector<int> &state, double θ) {
 
   for (int node = 0; node < N; ++node) {
     auto sphere = influence_sphere(g, state, node, θ);
+    b[node] = sphere.branching;
+	
     for (int a : sphere.affected) {
       if (a == node)
         continue;
       I[a] += 1.0 / sphere.dist[a];
-      b[a] += sphere.branching[a] / (N - 1.0);
     }
   }
 

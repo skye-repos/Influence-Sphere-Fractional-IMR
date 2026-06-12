@@ -8,7 +8,7 @@
 struct InfluenceResult {
   std::vector<int> dist;
   std::vector<int> affected;
-  std::vector<int> branching;
+  int branching;
 };
 
 InfluenceResult influence_sphere(const Graph &g, const std::vector<int> &state,
