@@ -25,7 +25,7 @@ void print_usage(const char *prog) {
   std::cerr << "Usage: " << prog << " [options]\n"
             << "  -N <int>           Number of nodes (default 1000)\n"
             << "  -kavg <float>      Average degree (default 4.5)\n"
-            << "  -nrel <int>        Number of realisations (default 5)\n"
+            << "  -nrel <int>        Number of realisations (default 25)\n"
             << "  -tmin <float>      Min theta (default 0.40)\n"
             << "  -tmax <float>      Max theta (default 0.80)\n"
             << "  -Nt <int>          # of Theta steps (default 100)\n"

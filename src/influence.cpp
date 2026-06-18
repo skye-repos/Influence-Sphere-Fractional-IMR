@@ -53,7 +53,7 @@ total_instability(const Graph &g, const std::vector<int> &state, double θ) {
   for (int node = 0; node < N; ++node) {
     auto sphere = influence_sphere(g, state, node, θ);
     b[node] = sphere.branching;
-	
+
     for (int a : sphere.affected) {
       if (a == node)
         continue;
