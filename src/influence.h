@@ -23,7 +23,7 @@ struct OpinionInstability {
 };
 
 OpinionInstability opinion_instability(const std::vector<double> &I_total,
-                                       std::vector<int> &state);
+                                       const std::vector<int> &state);
 
 double expectation(const std::vector<double> &I_vec);
 
@@ -33,4 +33,4 @@ struct InfluenceDiGraph {
 };
 
 InfluenceDiGraph influence_graph(const Graph &g, const std::vector<int> &state,
-                               double θ);
+                                 double θ);

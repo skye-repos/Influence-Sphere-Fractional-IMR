@@ -15,10 +15,7 @@ int DiGraph::ne() const {
   int total = 0;
   for (int d_out : out_deg) {
     total += d_out;
-  }
-  for (int d_in : in_deg) {
-    total += d_in;
-  }
+  }  
   return total;
 }
 

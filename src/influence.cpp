@@ -1,5 +1,6 @@
 #include "influence.h"
 #include "simulate.h"
+#include <numeric>
 #include <queue>
 #include <vector>
 
@@ -69,7 +70,7 @@ total_instability(const Graph &g, const std::vector<int> &state, double θ) {
 }
 
 OpinionInstability opinion_instability(const std::vector<double> &I_total,
-                                       std::vector<int> &state) {
+                                       const std::vector<int> &state) {
   int N = I_total.size();
   double n = static_cast<double>(N);
   OpinionInstability I01;
@@ -105,16 +106,12 @@ double expectation(const std::vector<double> &I_vec) {
 }
 
 InfluenceDiGraph influence_graph(const Graph &g, const std::vector<int> &state,
-                               double θ) {
+                                 double θ) {
   const int N = g.nv();
 
-  InfluenceDiGraph result;
-  result.branching_factor = 0;
-  result.influence = DiGraph(N);
+  InfluenceDiGraph result{0.0, DiGraph(N)};
 
   for (int node = 0; node < N; ++node) {
-    std::queue<int> Q;
-
     std::vector<int> flipped = state;
     flipped[node] = 1 - flipped[node];
 
