@@ -26,19 +26,13 @@ AvgSimResult avg_simulate_IMR(const int N, const double p,
   std::vector<std::vector<std::vector<double>>> t_flips(num_threads);
   std::vector<std::vector<std::vector<double>>> t_ffrac(num_threads);
   std::vector<std::vector<std::vector<double>>> t_ctime(num_threads);
-  std::vector<std::vector<std::vector<double>>> t_exin0(num_threads);
-  std::vector<std::vector<std::vector<double>>> t_exin1(num_threads);
   std::vector<std::vector<std::vector<double>>> t_brnch(num_threads);
-  std::vector<std::vector<std::vector<double>>> t_outdg(num_threads);
 
   for (int t = 0; t < num_threads; ++t) {
     t_flips[t].assign(NF0, std::vector<double>(Nθ, 0.0));
     t_ffrac[t].assign(NF0, std::vector<double>(Nθ, 0.0));
     t_ctime[t].assign(NF0, std::vector<double>(Nθ, 0.0));
-    t_exin0[t].assign(NF0, std::vector<double>(Nθ, 0.0));
-    t_exin1[t].assign(NF0, std::vector<double>(Nθ, 0.0));
     t_brnch[t].assign(NF0, std::vector<double>(Nθ, 0.0));
-    t_outdg[t].assign(NF0, std::vector<double>(Nθ, 0.0));
   }
 
   std::cout << "N_realizations * Nθ * NF0 = " << num_realizations * Nθ * NF0
@@ -64,17 +58,12 @@ AvgSimResult avg_simulate_IMR(const int N, const double p,
 
           auto n_flips = count_flips(result);
           auto n_ffrac = count_ffrac(result);
-          auto [I_total, b_total] = total_instability(g, result.tracking[0], θ);
-          auto I01 = opinion_instability(I_total, result.tracking[0]);
           auto Igraph = influence_graph(g, result.tracking[0], θ);
 
           t_flips[tid][j][i] += n_flips;
           t_ffrac[tid][j][i] += n_ffrac;
           t_ctime[tid][j][i] += static_cast<double>(result.sweep_count);
-          t_exin0[tid][j][i] += expectation(I01.I0);
-          t_exin1[tid][j][i] += expectation(I01.I1);
-          t_brnch[tid][j][i] += expectation(b_total);
-          t_outdg[tid][j][i] += Igraph.branching_factor;
+          t_brnch[tid][j][i] += Igraph.branching_factor;
           std::cout << "F0, θ: " << F0 << ", " << θ << '\n';
         }
       }
@@ -83,10 +72,7 @@ AvgSimResult avg_simulate_IMR(const int N, const double p,
   std::vector<std::vector<double>> flips(NF0, std::vector<double>(Nθ, 0.0));
   std::vector<std::vector<double>> ffrac(NF0, std::vector<double>(Nθ, 0.0));
   std::vector<std::vector<double>> ctime(NF0, std::vector<double>(Nθ, 0.0));
-  std::vector<std::vector<double>> exin0(NF0, std::vector<double>(Nθ, 0.0));
-  std::vector<std::vector<double>> exin1(NF0, std::vector<double>(Nθ, 0.0));
   std::vector<std::vector<double>> brnch(NF0, std::vector<double>(Nθ, 0.0));
-  std::vector<std::vector<double>> outdg(NF0, std::vector<double>(Nθ, 0.0));
 
   for (int tid = 0; tid < num_threads; ++tid) {
     for (int fi = 0; fi < NF0; ++fi) {
@@ -94,10 +80,7 @@ AvgSimResult avg_simulate_IMR(const int N, const double p,
         flips[fi][ti] += t_flips[tid][fi][ti] / nr;
         ffrac[fi][ti] += t_ffrac[tid][fi][ti] / nr;
         ctime[fi][ti] += t_ctime[tid][fi][ti] / nr;
-        exin0[fi][ti] += t_exin0[tid][fi][ti] / nr;
-        exin1[fi][ti] += t_exin1[tid][fi][ti] / nr;
         brnch[fi][ti] += t_brnch[tid][fi][ti] / nr;
-        outdg[fi][ti] += t_outdg[tid][fi][ti] / nr;
       }
     }
   }
@@ -106,10 +89,7 @@ AvgSimResult avg_simulate_IMR(const int N, const double p,
   avg_result.flips_matrix = std::move(flips);
   avg_result.ffrac_matrix = std::move(ffrac);
   avg_result.ctime_matrix = std::move(ctime);
-  avg_result.exin0_matrix = std::move(exin0);
-  avg_result.exin1_matrix = std::move(exin1);
   avg_result.brnch_matrix = std::move(brnch);
-  avg_result.outdg_matrix = std::move(outdg);
 
   return avg_result;
 }
