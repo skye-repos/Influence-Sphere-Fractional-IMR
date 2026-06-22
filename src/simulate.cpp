@@ -70,8 +70,8 @@ double count_flips(const SimResult &result) {
   std::vector<int> floppers(N);
 
   for (int i = 0; i < l - 1; ++i) {
-    std::vector<int> prev = result.tracking[i];
-    std::vector<int> next = result.tracking[i + 1];
+    const auto &prev = result.tracking[i];
+    const auto &next = result.tracking[i + 1];
     for (int m = 0; m < N; ++m) {
       int val = next[m] - prev[m];
       flippers[m] += std::abs(val);

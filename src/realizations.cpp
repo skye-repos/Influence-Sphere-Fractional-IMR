@@ -1,6 +1,7 @@
 #include "realizations.h"
 #include "influence.h"
 #include <iostream>
+#include <numeric>
 #include <omp.h>
 #include <vector>
 
@@ -27,13 +28,15 @@ AvgSimResult avg_simulate_IMR(const int N, const double p,
   std::vector<std::vector<std::vector<double>>> t_flips(num_threads);
   std::vector<std::vector<std::vector<double>>> t_ffrac(num_threads);
   std::vector<std::vector<std::vector<double>>> t_ctime(num_threads);
-  std::vector<std::vector<std::vector<std::vector<double>>>> t_brnch_step(num_threads);
+  std::vector<std::vector<std::vector<std::vector<double>>>> t_brnch_step(
+      num_threads);
 
   for (int t = 0; t < num_threads; ++t) {
     t_flips[t].assign(NF0, std::vector<double>(Nθ, 0.0));
     t_ffrac[t].assign(NF0, std::vector<double>(Nθ, 0.0));
     t_ctime[t].assign(NF0, std::vector<double>(Nθ, 0.0));
-    t_brnch_step[t].assign(max_sweeps, std::vector<std::vector<double>>(NF0, std::vector<double>(Nθ, 0.0)));
+    t_brnch_step[t].assign(max_sweeps, std::vector<std::vector<double>>(
+                                           NF0, std::vector<double>(Nθ, 0.0)));
   }
 
   std::cout << "N_realizations * Nθ * NF0 = " << num_realizations * Nθ * NF0
@@ -65,7 +68,9 @@ AvgSimResult avg_simulate_IMR(const int N, const double p,
           t_ctime[tid][j][i] += static_cast<double>(result.sweep_count);
           for (int s = 0; s < max_sweeps; ++s) {
             auto Igraph = influence_graph(g, result.tracking[s], θ);
-            t_brnch_step[tid][s][j][i] += Igraph.branching_factor;
+            auto bf = std::accumulate(Igraph.out_deg.begin(),
+                                      Igraph.out_deg.end(), 0.0);
+            t_brnch_step[tid][s][j][i] += bf / static_cast<double>(N);
           }
           std::cout << "F0, θ: " << F0 << ", " << θ << '\n';
         }
