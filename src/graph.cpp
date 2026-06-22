@@ -11,11 +11,28 @@ int Graph::ne() const {
   return total / 2;
 }
 
+int DiGraph::ne() const {
+  int total = 0;
+  for (int d_out : out_deg) {
+    total += d_out;
+  }
+  for (int d_in : in_deg) {
+    total += d_in;
+  }
+  return total;
+}
+
 void Graph::add_edge(int u, int v) {
   adj[u].push_back(v);
   adj[v].push_back(u);
   deg[u]++;
   deg[v]++;
+}
+
+void DiGraph::add_edge(int u, int v) {
+  adj[u].push_back(v);
+  out_deg[u]++;
+  in_deg[v]++;
 }
 
 void Graph::rem_edge(int u, int v) {
@@ -34,7 +51,21 @@ void Graph::rem_edge(int u, int v) {
   }
 }
 
+void DiGraph::rem_edge(int u, int v) {
+  auto it = std::find(adj[u].begin(), adj[u].end(), v);
+
+  if (it != adj[u].end()) {
+    adj[u].erase(it);
+    out_deg[u]--;
+    in_deg[v]--;
+  }
+}
+
 bool Graph::has_edge(int u, int v) const {
+  return std::find(adj[u].begin(), adj[u].end(), v) != adj[u].end();
+}
+
+bool DiGraph::has_edge(int u, int v) const {
   return std::find(adj[u].begin(), adj[u].end(), v) != adj[u].end();
 }
 

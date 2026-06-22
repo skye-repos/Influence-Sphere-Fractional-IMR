@@ -19,4 +19,21 @@ struct Graph {
   const std::vector<int> &neighbors(int u) const { return adj[u]; }
 };
 
+struct DiGraph {
+  std::vector<std::vector<int>> adj;
+  std::vector<int> out_deg;
+  std::vector<int> in_deg;
+
+  explicit DiGraph(int N) : adj(N), out_deg(N, 0), in_deg(N, 0) {}
+
+  int nv() const { return static_cast<int>(adj.size()); }
+  int ne() const;
+
+  void add_edge(int u, int v);
+  void rem_edge(int u, int v);
+  bool has_edge(int u, int v) const;
+
+  const std::vector<int> &out_neighbors(int u) const { return adj[u]; }
+};
+
 Graph erdos_renyii(int N, double p, std::mt19937 &rng);

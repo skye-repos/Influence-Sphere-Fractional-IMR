@@ -103,3 +103,33 @@ double expectation(const std::vector<double> &I_vec) {
 
   return I_sum / static_cast<double>(N);
 }
+
+InfluenceDiGraph influence_graph(const Graph &g, const std::vector<int> &state,
+                               double θ) {
+  const int N = g.nv();
+
+  InfluenceDiGraph result;
+  result.branching_factor = 0;
+  result.influence = DiGraph(N);
+
+  for (int node = 0; node < N; ++node) {
+    std::queue<int> Q;
+
+    std::vector<int> flipped = state;
+    flipped[node] = 1 - flipped[node];
+
+    for (int nbr : g.neighbors(node)) {
+      int orig_op = new_state(g, θ, nbr, state);
+      int flip_op = new_state(g, θ, nbr, flipped);
+      double bf = 0.0;
+
+      if (flip_op != state[nbr] && orig_op == state[nbr]) {
+        result.influence.add_edge(node, nbr);
+        ++bf;
+      }
+      result.branching_factor += bf / static_cast<double>(N);
+    }
+  }
+
+  return result;
+}

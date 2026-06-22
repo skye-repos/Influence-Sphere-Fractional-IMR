@@ -139,6 +139,7 @@ int main(int argc, char *argv[]) {
       "results/N = " + std::to_string(N) + "/CSV/exins_rsc.csv";
 
   auto brnch_path = "results/N = " + std::to_string(N) + "/CSV/brnch.csv";
+  auto outdg_path = "results/N = " + std::to_string(N) + "/CSV/outdg.csv";
 
   write_csv(flips_path, θ_labels, F0_labels, results.flips_matrix);
   write_csv(ffrac_path, θ_labels, F0_labels, results.ffrac_matrix);
@@ -150,4 +151,5 @@ int main(int argc, char *argv[]) {
   write_csv(exin1_rsc_path, θ_labels, F0_labels, exin1_rsc);
   write_csv(exins_rsc_path, θ_labels, F0_labels, exins_rsc);
   write_csv(brnch_path, θ_labels, F0_labels, results.brnch_matrix);
+  write_csv(outdg_path, θ_labels, F0_labels, results.outdg_matrix);
 }
