@@ -39,6 +39,9 @@ for file in files
         title = "Rescaled ⟨I1⟩ - ⟨I0⟩"
     elseif name == "brnch"
         title = "Expected value of branching factor"
+    elseif startswith(name, "brnch_")
+        sweep = split(name, "_")[2]
+        title = "Branching factor - sweep " * sweep
     elseif name == "outdg"
         title = "⟨k_out⟩ of Influence DiGraph"
     end

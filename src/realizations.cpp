@@ -27,13 +27,13 @@ AvgSimResult avg_simulate_IMR(const int N, const double p,
   std::vector<std::vector<std::vector<double>>> t_flips(num_threads);
   std::vector<std::vector<std::vector<double>>> t_ffrac(num_threads);
   std::vector<std::vector<std::vector<double>>> t_ctime(num_threads);
-  std::vector<std::vector<std::vector<double>>> t_brnch(num_threads);
+  std::vector<std::vector<std::vector<std::vector<double>>>> t_brnch_step(num_threads);
 
   for (int t = 0; t < num_threads; ++t) {
     t_flips[t].assign(NF0, std::vector<double>(Nθ, 0.0));
     t_ffrac[t].assign(NF0, std::vector<double>(Nθ, 0.0));
     t_ctime[t].assign(NF0, std::vector<double>(Nθ, 0.0));
-    t_brnch[t].assign(NF0, std::vector<double>(Nθ, 0.0));
+    t_brnch_step[t].assign(max_sweeps, std::vector<std::vector<double>>(NF0, std::vector<double>(Nθ, 0.0)));
   }
 
   std::cout << "N_realizations * Nθ * NF0 = " << num_realizations * Nθ * NF0
@@ -59,12 +59,14 @@ AvgSimResult avg_simulate_IMR(const int N, const double p,
 
           auto n_flips = count_flips(result);
           auto n_ffrac = count_ffrac(result);
-          auto Igraph = influence_graph(g, result.tracking[0], θ);
 
           t_flips[tid][j][i] += n_flips;
           t_ffrac[tid][j][i] += n_ffrac;
           t_ctime[tid][j][i] += static_cast<double>(result.sweep_count);
-          t_brnch[tid][j][i] += Igraph.branching_factor;
+          for (int s = 0; s < max_sweeps; ++s) {
+            auto Igraph = influence_graph(g, result.tracking[s], θ);
+            t_brnch_step[tid][s][j][i] += Igraph.branching_factor;
+          }
           std::cout << "F0, θ: " << F0 << ", " << θ << '\n';
         }
       }
@@ -73,7 +75,9 @@ AvgSimResult avg_simulate_IMR(const int N, const double p,
   std::vector<std::vector<double>> flips(NF0, std::vector<double>(Nθ, 0.0));
   std::vector<std::vector<double>> ffrac(NF0, std::vector<double>(Nθ, 0.0));
   std::vector<std::vector<double>> ctime(NF0, std::vector<double>(Nθ, 0.0));
-  std::vector<std::vector<double>> brnch(NF0, std::vector<double>(Nθ, 0.0));
+  std::vector<std::vector<std::vector<double>>> brnch_step(
+      max_sweeps,
+      std::vector<std::vector<double>>(NF0, std::vector<double>(Nθ, 0.0)));
 
   for (int tid = 0; tid < num_threads; ++tid) {
     for (int fi = 0; fi < NF0; ++fi) {
@@ -81,7 +85,9 @@ AvgSimResult avg_simulate_IMR(const int N, const double p,
         flips[fi][ti] += t_flips[tid][fi][ti] / nr;
         ffrac[fi][ti] += t_ffrac[tid][fi][ti] / nr;
         ctime[fi][ti] += t_ctime[tid][fi][ti] / nr;
-        brnch[fi][ti] += t_brnch[tid][fi][ti] / nr;
+        for (int s = 0; s < max_sweeps; ++s) {
+          brnch_step[s][fi][ti] += t_brnch_step[tid][s][fi][ti] / nr;
+        }
       }
     }
   }
@@ -90,7 +96,7 @@ AvgSimResult avg_simulate_IMR(const int N, const double p,
   avg_result.flips_matrix = std::move(flips);
   avg_result.ffrac_matrix = std::move(ffrac);
   avg_result.ctime_matrix = std::move(ctime);
-  avg_result.brnch_matrix = std::move(brnch);
+  avg_result.brnch_step_matrix = std::move(brnch_step);
 
   return avg_result;
 }

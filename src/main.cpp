@@ -105,10 +105,14 @@ int main(int argc, char *argv[]) {
   auto flips_path = "CSV/N = " + std::to_string(N) + "/flips.csv";
   auto ffrac_path = "CSV/N = " + std::to_string(N) + "/ffrac.csv";
   auto ctime_path = "CSV/N = " + std::to_string(N) + "/ctime.csv";
-  auto brnch_path = "CSV/N = " + std::to_string(N) + "/brnch.csv";
 
   write_csv(flips_path, θ_labels, F0_labels, results.flips_matrix);
   write_csv(ffrac_path, θ_labels, F0_labels, results.ffrac_matrix);
   write_csv(ctime_path, θ_labels, F0_labels, results.ctime_matrix);
-  write_csv(brnch_path, θ_labels, F0_labels, results.brnch_matrix);
+
+  auto brnch_dir = "CSV/N = " + std::to_string(N) + "/brnch_step/";
+  for (size_t s = 0; s < results.brnch_step_matrix.size(); ++s) {
+    auto brnch_path = brnch_dir + "brnch_" + std::to_string(s) + ".csv";
+    write_csv(brnch_path, θ_labels, F0_labels, results.brnch_step_matrix[s]);
+  }
 }
