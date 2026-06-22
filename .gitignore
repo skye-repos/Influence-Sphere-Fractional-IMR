@@ -1,5 +1,6 @@
 build/*
 LEARNING.org
-results/*
+CSV/*
+plots/*
 src/*.o
 *.out
