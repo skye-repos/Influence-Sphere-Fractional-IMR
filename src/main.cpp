@@ -92,13 +92,13 @@ int main(int argc, char *argv[]) {
 
   std::vector<std::string> θ_labels(Nθ);
   for (int i = 0; i < Nθ; ++i) {
-    double val = θ_min + i * (θ_max - θ_min) / Nθ;
+    double val = θ_min + i * (θ_max - θ_min) / (Nθ - 1);
     θ_labels[i] = std::to_string(val);
   }
 
   std::vector<std::string> F0_labels(NF0);
   for (int i = 0; i < NF0; ++i) {
-    double val = F0_min + i * (F0_max - F0_min) / NF0;
+    double val = F0_min + i * (F0_max - F0_min) / (NF0 - 1);
     F0_labels[i] = std::to_string(val);
   }
 

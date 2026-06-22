@@ -43,7 +43,6 @@ SimResult simulate_IMR(const Graph &g, std::mt19937 &rng, double θ, double F0,
   std::iota(order.begin(), order.end(), 0);
 
   for (int sweep = 0; sweep < max_sweeps; ++sweep) {
-    int changes = 0;
     std::vector<int> current = results.tracking.back();
 
     std::shuffle(order.begin(), order.end(), rng);
@@ -51,19 +50,13 @@ SimResult simulate_IMR(const Graph &g, std::mt19937 &rng, double θ, double F0,
     for (int node : order) {
       int new_node_state = new_state(g, θ, node, current);
 
-      if (new_node_state != current.at(node)) {
+      if (new_node_state != current[node]) {
         current[node] = new_node_state;
-        ++changes;
       }
     }
 
     results.tracking.push_back(current);
     ++results.sweep_count;
-
-    state = std::move(current);
-
-    if (changes == 0)
-      break;
   }
 
   return results;

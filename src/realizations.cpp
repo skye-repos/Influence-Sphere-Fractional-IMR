@@ -10,15 +10,16 @@ AvgSimResult avg_simulate_IMR(const int N, const double p,
                               double F0_max, int NF0) {
 
   double nr = static_cast<double>(num_realizations);
+  int max_sweeps = 50;
 
   std::vector<double> θ_list(Nθ);
   for (int i = 0; i < Nθ; ++i) {
-    θ_list[i] = θ_min + i * (θ_max - θ_min) / Nθ;
+    θ_list[i] = θ_min + i * (θ_max - θ_min) / (Nθ - 1);
   }
 
   std::vector<double> F0_list(NF0);
   for (int i = 0; i < NF0; ++i) {
-    F0_list[i] = F0_min + i * (F0_max - F0_min) / NF0;
+    F0_list[i] = F0_min + i * (F0_max - F0_min) / (NF0 - 1);
   }
 
   int num_threads = omp_get_max_threads();
@@ -54,7 +55,7 @@ AvgSimResult avg_simulate_IMR(const int N, const double p,
         double θ = θ_list[i];
         for (int j = 0; j < NF0; ++j) {
           double F0 = F0_list[j];
-          SimResult result = simulate_IMR(g, rng, θ, F0, 100);
+          SimResult result = simulate_IMR(g, rng, θ, F0, max_sweeps);
 
           auto n_flips = count_flips(result);
           auto n_ffrac = count_ffrac(result);
