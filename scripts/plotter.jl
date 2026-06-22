@@ -4,7 +4,7 @@ using Glob
 using Plots
 using CSV, DataFrames
 
-files = glob("*/*/*", "../results/", join = true)
+files = glob("*/*/*", "../CSV/", join = true)
 
 function make_heatmap(file::AbstractString, name::AbstractString)
     df = CSV.read(file, DataFrame)
