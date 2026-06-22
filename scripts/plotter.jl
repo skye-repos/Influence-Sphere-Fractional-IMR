@@ -39,6 +39,8 @@ for file in files
         title = "Rescaled ⟨I1⟩ - ⟨I0⟩"
     elseif name == "brnch"
         title = "Expected value of branching factor"
+    elseif name == "outdg"
+        title = "⟨k_out⟩ of Influence DiGraph"
     end
 
     hmp = make_heatmap(file, title)
