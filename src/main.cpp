@@ -9,14 +9,14 @@
 #include <vector>
 
 struct Config {
-  int N = 2500;
+  int N = 20000;
   double kavg = 4.5;
   int nrel = 25;
-  double tmin = 0.10;
-  double tmax = 0.90;
+  double tmin = 0.00;
+  double tmax = 1.00;
   int Nt = 1000;
   double F0min = 0.10;
-  double F0max = 0.60;
+  double F0max = 0.55;
   int NF0 = 10;
   int seed = 12345;
 };
