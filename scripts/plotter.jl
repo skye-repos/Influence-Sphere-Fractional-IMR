@@ -4,8 +4,9 @@ using Glob
 using Plots
 using CSV, DataFrames
 
-files = vcat(glob("*/*/*", "../results/", join = true),
-             glob("*/*/*/*", "../results/", join = true))
+files = filter(f -> isfile(f) && endswith(f, ".csv"),
+               vcat(glob("*/*/*", "../results/", join = true),
+                    glob("*/*/*/*", "../results/", join = true)))
 
 function make_heatmap(file::AbstractString, name::AbstractString)
     df = CSV.read(file, DataFrame)
