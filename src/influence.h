@@ -17,6 +17,10 @@ InfluenceResult influence_sphere(const Graph &g, const std::vector<int> &state,
 std::tuple<std::vector<double>, std::vector<double>>
 total_instability(const Graph &g, const std::vector<int> &state, double θ);
 
+// Network branching factor: average number of pure-flips induced by
+// flipping each node's opinion, holding the rest of `state` fixed.
+double branching_factor(const Graph &g, const std::vector<int> &state, double θ);
+
 struct OpinionInstability {
   std::vector<double> I0;
   std::vector<double> I1;

@@ -4,7 +4,8 @@ using Glob
 using Plots
 using CSV, DataFrames
 
-files = glob("*/*/*", "../results/", join = true)
+files = vcat(glob("*/*/*", "../results/", join = true),
+             glob("*/*/*/*", "../results/", join = true))
 
 function make_heatmap(file::AbstractString, name::AbstractString)
     df = CSV.read(file, DataFrame)
@@ -39,6 +40,9 @@ for file in files
         title = "Rescaled ⟨I1⟩ - ⟨I0⟩"
     elseif name == "brnch"
         title = "Expected value of branching factor"
+    elseif startswith(name, "brnch_")
+        sweep = split(name, "_")[2]
+        title = "Branching factor - sweep " * sweep
     end
 
     hmp = make_heatmap(file, title)

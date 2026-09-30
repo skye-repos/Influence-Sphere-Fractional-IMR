@@ -19,6 +19,7 @@ struct Config {
   double F0max = 0.55;
   int NF0 = 10;
   int seed = 12345;
+  int max_sweeps = 100;
 };
 
 void print_usage(const char *prog) {
@@ -33,6 +34,8 @@ void print_usage(const char *prog) {
             << "  -F0max <float>     Max F0 (default 0.50)\n"
             << "  -NF0 <int>         # of F0 steps (default 5)\n"
             << "  -seed <int>        Random seed (default 12345)\n"
+            << "  -max-sweeps <int>  Max sweeps / branching-factor steps "
+               "(default 100)\n"
             << "  -h                 Show this help\n";
 };
 
@@ -60,6 +63,8 @@ Config parse_args(int argc, char *argv[]) {
       cfg.NF0 = std::atoi(argv[++i]);
     else if (std::strcmp(argv[i], "-seed") == 0)
       cfg.seed = std::atoi(argv[++i]);
+    else if (std::strcmp(argv[i], "-max-sweeps") == 0)
+      cfg.max_sweeps = std::atoi(argv[++i]);
     else if (std::strcmp(argv[i], "-h") == 0) {
       print_usage(argv[0]);
       std::exit(0);
@@ -87,31 +92,9 @@ int main(int argc, char *argv[]) {
   const double F0_max = std::move(cfg.F0max);
   const int NF0 = std::move(cfg.NF0);
 
-  AvgSimResult results = avg_simulate_IMR(
-      N, p, num_realizations, cfg.seed, θ_min, θ_max, Nθ, F0_min, F0_max, NF0);
-
-  std::vector<std::vector<double>> exin0_rsc = results.exin0_matrix;
-  std::vector<std::vector<double>> exin1_rsc = results.exin1_matrix;
-  std::vector<std::vector<double>> exins(NF0, std::vector<double>(Nθ, 0.0));
-
-  for (int fi = 0; fi < NF0; ++fi) {
-    double max0 = *std::max_element(exin0_rsc[fi].begin(), exin0_rsc[fi].end());
-    double max1 = *std::max_element(exin1_rsc[fi].begin(), exin1_rsc[fi].end());
-    for (int ti = 0; ti < Nθ; ++ti) {
-      exin0_rsc[fi][ti] *= 1.0 / max0;
-      exin1_rsc[fi][ti] *= 1.0 / max1;
-      exins[fi][ti] = exin1_rsc[fi][ti] - exin1_rsc[fi][ti];
-    }
-  }
-
-  std::vector<std::vector<double>> exins_rsc = exins;
-
-  for (int fi = 0; fi < NF0; ++fi) {
-    double maxs = *std::max_element(exins_rsc[fi].begin(), exins_rsc[fi].end());
-    for (int ti = 0; ti < Nθ; ++ti) {
-      exins_rsc[fi][ti] *= 1.0 / maxs;
-    }
-  }
+  AvgSimResult results =
+      avg_simulate_IMR(N, p, num_realizations, cfg.seed, θ_min, θ_max, Nθ,
+                       F0_min, F0_max, NF0, cfg.max_sweeps);
 
   std::vector<std::string> θ_labels(Nθ);
   for (int i = 0; i < Nθ; ++i) {
@@ -125,29 +108,15 @@ int main(int argc, char *argv[]) {
     F0_labels[i] = std::to_string(val);
   }
 
-  auto flips_path = "results/N = " + std::to_string(N) + "/CSV/flips.csv";
-  auto ffrac_path = "results/N = " + std::to_string(N) + "/CSV/ffrac.csv";
-  auto ctime_path = "results/N = " + std::to_string(N) + "/CSV/ctime.csv";
-  auto exin0_path = "results/N = " + std::to_string(N) + "/CSV/exin0.csv";
-  auto exin1_path = "results/N = " + std::to_string(N) + "/CSV/exin1.csv";
-  auto exins_path = "results/N = " + std::to_string(N) + "/CSV/exins.csv";
-  auto exin0_rsc_path =
-      "results/N = " + std::to_string(N) + "/CSV/exin0_rsc.csv";
-  auto exin1_rsc_path =
-      "results/N = " + std::to_string(N) + "/CSV/exin1_rsc.csv";
-  auto exins_rsc_path =
-      "results/N = " + std::to_string(N) + "/CSV/exins_rsc.csv";
-
   auto brnch_path = "results/N = " + std::to_string(N) + "/CSV/brnch.csv";
-
-  write_csv(flips_path, θ_labels, F0_labels, results.flips_matrix);
-  write_csv(ffrac_path, θ_labels, F0_labels, results.ffrac_matrix);
-  write_csv(ctime_path, θ_labels, F0_labels, results.ctime_matrix);
-  write_csv(exin0_path, θ_labels, F0_labels, results.exin0_matrix);
-  write_csv(exin1_path, θ_labels, F0_labels, results.exin1_matrix);
-  write_csv(exins_path, θ_labels, F0_labels, exins);
-  write_csv(exin0_rsc_path, θ_labels, F0_labels, exin0_rsc);
-  write_csv(exin1_rsc_path, θ_labels, F0_labels, exin1_rsc);
-  write_csv(exins_rsc_path, θ_labels, F0_labels, exins_rsc);
   write_csv(brnch_path, θ_labels, F0_labels, results.brnch_matrix);
+
+  auto brnch_step_dir =
+      "results/N = " + std::to_string(N) + "/CSV/brnch_step/";
+  for (size_t s = 0; s < results.brnch_step_matrix.size(); ++s) {
+    auto brnch_step_path =
+        brnch_step_dir + "brnch_" + std::to_string(s) + ".csv";
+    write_csv(brnch_step_path, θ_labels, F0_labels,
+              results.brnch_step_matrix[s]);
+  }
 }
